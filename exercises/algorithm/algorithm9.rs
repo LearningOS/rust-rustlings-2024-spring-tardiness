@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +37,9 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        self.items.push(value);
+        self.sift_up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,8 +60,47 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left_child = self.left_child_idx(idx);
+        let right_child = self.right_child_idx(idx);
+
+        if right_child <= self.count && (self.comparator)(&self.items[right_child], &self.items[left_child]) {
+            right_child
+        } else {
+            left_child
+        }
     }
+
+    fn sift_up(&mut self, mut idx: usize) {
+        let mut parent = self.parent_idx(idx);
+        while idx > 0 && (self.comparator)(&self.items[idx], &self.items[parent]) {
+            self.items.swap(idx, parent);
+            idx = parent;
+            parent = self.parent_idx(idx);
+        }
+    }
+
+    fn sift_down(&mut self, mut idx: usize) {
+        let left_child_idx = self.left_child_idx(idx);
+        let right_child_idx = self.right_child_idx(idx);
+      
+        while self.children_present(idx) {
+          let mut largest_child = idx;
+          if left_child_idx <= self.count && (self.comparator)(&self.items[left_child_idx], &self.items[largest_child]) {
+            largest_child = left_child_idx;
+          }
+          if right_child_idx <= self.count && (self.comparator)(&self.items[right_child_idx], &self.items[largest_child]) {
+            largest_child = right_child_idx;
+          }
+      
+          if idx == largest_child {
+            break; 
+          }
+      
+          self.items.swap(idx, largest_child);
+          idx = largest_child;
+        }
+      }
+
 }
 
 impl<T> Heap<T>
@@ -85,7 +126,18 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.is_empty() {
+            return None;
+          }
+      
+          let root_element = self.items.remove(0);
+          self.count -= 1;
+      
+          if !self.is_empty() {
+            self.sift_down(0);
+          }
+      
+          Some(root_element)
     }
 }
 
@@ -130,6 +182,7 @@ mod tests {
         heap.add(9);
         heap.add(11);
         assert_eq!(heap.len(), 4);
+        heap.next();
         assert_eq!(heap.next(), Some(2));
         assert_eq!(heap.next(), Some(4));
         assert_eq!(heap.next(), Some(9));
